@@ -16,60 +16,56 @@ function PredictionForm() {
     setResult(null);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/predict`, { job_text: jobText });
+      const response = await axios.post(`${API_BASE_URL}/api/predict`, {
+        job_text: jobText
+      });
       setResult(response.data);
     } catch (err) {
-      setError(err.response?.data?.detail || 'An error occurred');
+      setError(err.response?.data?.detail || 'Something went wrong');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
+    <>
       <form onSubmit={handleSubmit}>
         <textarea
           value={jobText}
           onChange={(e) => setJobText(e.target.value)}
-          placeholder="Paste job description or email content here..."
+          placeholder="Paste job description or suspicious email here..."
           rows="6"
-          style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ccc', borderRadius: '4px' }}
           required
         />
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
-        >
-          {loading ? 'Predicting...' : 'Predict'}
+
+        <button type="submit" disabled={loading}>
+          {loading ? 'Analyzing...' : 'Analyze Job'}
         </button>
       </form>
 
-      {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+      {error && <p className="error">{error}</p>}
 
       {result && (
-        <div style={{ marginTop: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
-          <h3 style={{ color: result.prediction === 'REAL' ? 'green' : 'red' }}>
-            Prediction: {result.prediction}
-          </h3>
-          <p>Confidence: {result.confidence}%</p>
-          <div style={{ width: '100%', backgroundColor: '#e0e0e0', borderRadius: '4px', height: '20px' }}>
+        <div className={`result-box ${result.prediction.toLowerCase()}`}>
+          <h3>{result.prediction}</h3>
+          <p>Confidence: <strong>{result.confidence}%</strong></p>
+
+          <div className="progress-bar">
             <div
-              style={{
-                width: `${result.confidence}%`,
-                backgroundColor: result.prediction === 'REAL' ? 'green' : 'red',
-                height: '100%',
-                borderRadius: '4px'
-              }}
+              className="progress-fill"
+              style={{ width: `${result.confidence}%` }}
             />
           </div>
-          <p><strong>Key Scam Indicators:</strong></p>
+
+          <p className="indicator-title">⚠️ Scam Indicators</p>
           <ul>
-            {result.indicators.length > 0 ? result.indicators.map((ind, idx) => <li key={idx}>{ind}</li>) : <li>None detected</li>}
+            {result.indicators.length > 0
+              ? result.indicators.map((i, idx) => <li key={idx}>{i}</li>)
+              : <li>No suspicious indicators found</li>}
           </ul>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
